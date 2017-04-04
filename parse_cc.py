@@ -38,6 +38,8 @@ def get_skeleton_lic_data(text, key, fullname=None, rule=None, title=None):
 		'title': title,
 		'owner': 'Creative Commons',
 		'category': 'Copyleft Limited',
+		'homepage_url': None,
+		'text_url': None,
 		'fullname': title if fullname is None else fullname
 	}
 
@@ -96,19 +98,23 @@ def make_lic_url(key):
 	regex_normal = r'^([a-z\-]*)\-([\d\.]*)$' # by-nc-sa-3.0
 	regex_transl = r'^([a-z\-]*)\-([\d\.]*)\-([a-z]*)$' # by-nc-sa-3.0-cr
 	regex_local_transl = r'^([a-z\-]*)\-([\d\.]*)\-([a-z]*)\-([a-z]*)$' # by-nc-3.0-ch-de
+	regex_local_transl_2 = r'^([a-z\-]*)\-([\d\.]*)\-([a-z]*)\-([a-z\-]*)$' # by-3.0-rs-sr-Cyrl
 
 	url = None
-	if re.match(regex_normal, key):
-		mo = re.match(regex_normal, key)
+	if re.match(regex_normal, key, re.I):
+		mo = re.match(regex_normal, key, re.I)
 		url = 'https://creativecommons.org/licenses/%s/%s/legalcode' % (mo.group(1), mo.group(2))
-	elif re.match(regex_transl, key):
-		mo = re.match(regex_transl, key)
+	elif re.match(regex_transl, key, re.I):
+		mo = re.match(regex_transl, key, re.I)
 		url = 'https://creativecommons.org/licenses/%s/%s/legalcode.%s' % (mo.group(1), mo.group(2), mo.group(3))
-	elif re.match(regex_local_transl, key):
-		mo = re.match(regex_local_transl, key)
+	elif re.match(regex_local_transl, key, re.I):
+		mo = re.match(regex_local_transl, key, re.I)
+		url = 'https://creativecommons.org/licenses/%s/%s/%s/legalcode.%s' % (mo.group(1), mo.group(2), mo.group(3), mo.group(4))
+	elif re.match(regex_local_transl_2, key, re.I):
+		mo = re.match(regex_local_transl_2, key, re.I)
 		url = 'https://creativecommons.org/licenses/%s/%s/%s/legalcode.%s' % (mo.group(1), mo.group(2), mo.group(3), mo.group(4))
 	else:
-		print ('License url: unknown things have happened => ', key)
+		print ('ERROR: License url => ', key)
 	return url
 
 
@@ -121,7 +127,7 @@ def parse_license_list(lics):
 		path = lics[i]
 		newName = 'cc-' + i.replace('_', '-')
 		if path.endswith('.txt'):
-			print 'THIS SHOULD NOT BE POSSIBLE'
+			print 'ERROR: Shouldn\'t be possible'
 			lic_data = open(path, 'r').read()
 			title = lic_data[:lic_data.find('\n')+1]
 			result[newName] = get_skeleton_lic_data(lic_data, newName, title=title)
@@ -131,6 +137,9 @@ def parse_license_list(lics):
 				comps['text'], newName, rule=comps['notice'], title=comps['title'],
 				fullname=comps['fullname']
 			)
+			result[newName]['text_url'] = make_lic_url(newName)
+			if result[newName]['text_url']:
+				result[newName]['homepage_url'] = re.sub(r'legalcode.*', '', result[newName]['text_url'])
 	return result
 
 
@@ -140,7 +149,7 @@ def write_result(scanResult):
 	"""
 	# write new
 	for i in scanResult:
-		print (html_unicode_to_unicode( scanResult[i]['fullname'] ), make_lic_url(i))
+		print (html_unicode_to_unicode( scanResult[i]['fullname'] ), scanResult[i]['homepage_url'])
 
 
 
