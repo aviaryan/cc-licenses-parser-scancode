@@ -64,7 +64,7 @@ def parse_license_html(path):
 	# title
 	title = soup.find('title')
 	if title is None:
-		print ('None Title: ', path)
+		print ('ERROR: None Title: ', path)
 		title = path
 	else:
 		title = title.getText().strip(' \t\r\n')
@@ -127,7 +127,7 @@ def parse_license_list(lics):
 		path = lics[i]
 		newName = 'cc-' + i.replace('_', '-')
 		if path.endswith('.txt'):
-			print 'ERROR: Shouldn\'t be possible'
+			print ('ERROR: Shouldn\'t be possible')
 			lic_data = open(path, 'r').read()
 			title = lic_data[:lic_data.find('\n')+1]
 			result[newName] = get_skeleton_lic_data(lic_data, newName, title=title)
