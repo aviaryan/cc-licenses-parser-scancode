@@ -40,6 +40,7 @@ def get_skeleton_lic_data(text, key, fullname=None, rule=None, title=None):
 		'category': 'Copyleft Limited',
 		'homepage_url': None,
 		'text_url': None,
+		'spdx_license_key': key.upper(),
 		'fullname': title if fullname is None else fullname
 	}
 
