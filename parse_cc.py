@@ -33,14 +33,20 @@ def html_unicode_to_unicode(string):
 	return htmlparser.unescape(string)
 
 
-def load_files_list(limit=7):
+def load_files_list(limit=5):
 	"""
 	loads file with paths from the source dir
 	prioritizes txt over html
 	"""
 	root = '../legalcode/'
-	lics = dict()
+	# for same order
+	files = []
 	for i in os.listdir(root):
+		files.append(i)
+	files = sorted(files)
+	# next steps
+	lics = dict()
+	for i in files:
 		if i.endswith('.html'):
 			lics[i[:-5]] = root + i
 		elif i.endswith('.txt') and (i[:-4] not in lics):
@@ -87,6 +93,7 @@ def parse_license_html(path):
 	# get license
 	soup = BeautifulSoup(data, 'html.parser')
 	body = soup.find('body').find('div')  # first div after body
+	# see cc 2.5 example
 	text = body.getText()
 	# title
 	title = soup.find('title')
@@ -99,7 +106,12 @@ def parse_license_html(path):
 	# no try..catch here as this should work for a CC license
 	fullname = soup.find('div', {"id": "deed-license"})
 	if fullname is None:
-		fullname = soup.find('div', {'id': 'deed'}).find('p')
+		fullname = soup.find('div', {'id': 'deed'})
+		pc = fullname.find('p', {'align': 'center'})
+		if pc is None:
+			fullname = fullname.find('h1', {'align': 'center'})
+		else:
+			fullname = pc
 		fullname = fullname.getText()
 	else:
 		fullname = fullname.getText()
@@ -162,7 +174,7 @@ def parse_license_list(lics):
 			comps = parse_license_html(path)
 			result[newName] = get_skeleton_lic_data(
 				comps['text'], newName, rule=comps['notice'], title=comps['title'],
-				fullname=comps['fullname']
+				fullname='Creative Commons ' + comps['fullname']
 			)
 			result[newName]['text_url'] = make_lic_url(newName)
 			if result[newName]['text_url']:
