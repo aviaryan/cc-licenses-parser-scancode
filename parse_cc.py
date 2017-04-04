@@ -33,7 +33,7 @@ def html_unicode_to_unicode(string):
 	return htmlparser.unescape(string)
 
 
-def load_files_list(limit=15):
+def load_files_list(limit=7):
 	"""
 	loads file with paths from the source dir
 	prioritizes txt over html
@@ -86,7 +86,7 @@ def parse_license_html(path):
 		notice = soup.get_text()
 	# get license
 	soup = BeautifulSoup(data, 'html.parser')
-	body = soup.find('body')
+	body = soup.find('body').find('div')  # first div after body
 	text = body.getText()
 	# title
 	title = soup.find('title')
