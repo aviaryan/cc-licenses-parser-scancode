@@ -20,6 +20,10 @@ text_urls:
     - %s
 """
 
+RULE_YML = """licenses:
+    - %s
+"""
+
 
 #############
 ### CODE
@@ -188,7 +192,18 @@ def write_result(scanResult):
 		fp = open('licenses/' + i + '.yml', 'w', encoding='utf-8')
 		fp.write(yml_str)
 		fp.close()
-
+		# write rule
+		if not d['rule']:
+			continue
+		rule_text = d['rule']
+		fp = open('rules/' + i + '.RULE', 'w', encoding='utf-8')
+		fp.write(rule_text)
+		fp.close()
+		# write rule yml
+		yml_str = RULE_YML % (i)
+		fp = open('rules/' + i + '.yml', 'w', encoding='utf-8')
+		fp.write(yml_str)
+		fp.close()
 
 
 if __name__ == '__main__':
