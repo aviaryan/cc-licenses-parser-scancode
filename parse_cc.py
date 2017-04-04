@@ -1,15 +1,35 @@
 from bs4 import BeautifulSoup
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 import os
 import re
 
+
+##############
+### VARIABLES
+
+YML = """key: %s
+short_name: %s
+name: >-
+    %s
+
+category: %s
+owner: %s
+homepage_url: %s
+spdx_license_key: %s
+text_urls:
+    - %s
+"""
+
+
+#############
+### CODE
 
 def html_unicode_to_unicode(string):
 	htmlparser = HTMLParser()
 	return htmlparser.unescape(string)
 
 
-def load_files_list():
+def load_files_list(limit=15):
 	"""
 	loads file with paths from the source dir
 	prioritizes txt over html
@@ -21,14 +41,15 @@ def load_files_list():
 			lics[i[:-5]] = root + i
 		elif i.endswith('.txt') and (i[:-4] not in lics):
 			lics[i[:-4]] = root + i
+		limit -= 1
+		if limit == 0:
+			break
 	return lics
 
 
 def get_skeleton_lic_data(text, key, fullname=None, rule=None, title=None):
 	"""
 	returns skeleton data used in :parse_license_list
-	TODO: name deed_license (3) or p align center (2)
-	TODO: homepage https://creativecommons.org/licenses/by-nc/3.0/legalcode.eg
 	TODO: category maybe manually
 	"""
 	return {
@@ -148,9 +169,25 @@ def write_result(scanResult):
 	"""
 	writes result back to directories
 	"""
-	# write new
+	# create dirs
+	if not os.path.isdir('licenses'):
+		os.mkdir('licenses')
+	if not os.path.isdir('rules'):
+		os.mkdir('rules')
+	# create files
 	for i in scanResult:
-		print (html_unicode_to_unicode( scanResult[i]['fullname'] ), scanResult[i]['homepage_url'])
+		d = scanResult[i]
+		# write license
+		lic_text = scanResult[i]['text']
+		fp = open('licenses/' + i + '.LICENSE', 'w', encoding='utf-8')
+		fp.write(lic_text)
+		fp.close()
+		# write yml
+		yml_str = YML % (i, d['shortname'], d['fullname'], d['category'], d['owner'],
+				d['homepage_url'], d['spdx_license_key'], d['text_url'])
+		fp = open('licenses/' + i + '.yml', 'w', encoding='utf-8')
+		fp.write(yml_str)
+		fp.close()
 
 
 
