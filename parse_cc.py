@@ -86,7 +86,8 @@ def parse_license_html(path):
 		notice = soup.get_text()
 	# get license
 	soup = BeautifulSoup(data, 'html.parser')
-	text = soup.get_text()
+	body = soup.find('body')
+	text = body.getText()
 	# title
 	title = soup.find('title')
 	if title is None:
