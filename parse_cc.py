@@ -9,8 +9,7 @@ import re
 
 YML = """key: %s
 short_name: %s
-name: >-
-    %s
+name: %s
 
 category: %s
 owner: %s
@@ -33,7 +32,7 @@ def html_unicode_to_unicode(string):
 	return htmlparser.unescape(string)
 
 
-def load_files_list(limit=5):
+def load_files_list(limit=6):
 	"""
 	loads file with paths from the source dir
 	prioritizes txt over html
@@ -63,6 +62,7 @@ def get_skeleton_lic_data(text, key, fullname=None, rule=None, title=None):
 	TODO: category maybe manually
 	"""
 	return {
+		'key': key,
 		'text': text,
 		'rule': rule,
 		'shortname': key.upper(),
@@ -179,6 +179,8 @@ def parse_license_list(lics):
 			result[newName]['text_url'] = make_lic_url(newName)
 			if result[newName]['text_url']:
 				result[newName]['homepage_url'] = re.sub(r'legalcode.*', '', result[newName]['text_url'])
+			# do at last because some things depend on it
+			result[newName]['key'] = newName.lower()
 	return result
 
 
@@ -194,27 +196,28 @@ def write_result(scanResult):
 	# create files
 	for i in scanResult:
 		d = scanResult[i]
+		key = d['key']
 		# write license
 		lic_text = scanResult[i]['text']
-		fp = open('licenses/' + i + '.LICENSE', 'w', encoding='utf-8')
+		fp = open('licenses/' + key + '.LICENSE', 'w', encoding='utf-8')
 		fp.write(lic_text)
 		fp.close()
 		# write yml
-		yml_str = YML % (i, d['shortname'], d['fullname'], d['category'], d['owner'],
+		yml_str = YML % (key, d['shortname'], d['fullname'], d['category'], d['owner'],
 				d['homepage_url'], d['spdx_license_key'], d['text_url'])
-		fp = open('licenses/' + i + '.yml', 'w', encoding='utf-8')
+		fp = open('licenses/' + key + '.yml', 'w', encoding='utf-8')
 		fp.write(yml_str)
 		fp.close()
 		# write rule
 		if not d['rule']:
 			continue
 		rule_text = d['rule']
-		fp = open('rules/' + i + '.RULE', 'w', encoding='utf-8')
+		fp = open('rules/' + key + '.RULE', 'w', encoding='utf-8')
 		fp.write(rule_text)
 		fp.close()
 		# write rule yml
-		yml_str = RULE_YML % (i)
-		fp = open('rules/' + i + '.yml', 'w', encoding='utf-8')
+		yml_str = RULE_YML % (key)
+		fp = open('rules/' + key + '.yml', 'w', encoding='utf-8')
 		fp.write(yml_str)
 		fp.close()
 
